@@ -30,15 +30,36 @@ class TodoViewModelWithRepo(
     private val _filter = MutableStateFlow(TodoFilter.ALL)
     val filter: StateFlow<TodoFilter> = _filter
 
-    // Daftar yang sudah terfilter sesuai pilihan user
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    // Daftar yang sudah terfilter sesuai pilihan user dan search query
     val visibleTodos: StateFlow<List<Todo>> =
-        combine(_todos, _filter) { list, f ->
-            when (f) {
+        combine(_todos, _filter, _searchQuery) { list, f, query ->
+            val filtered = when (f) {
                 TodoFilter.ALL    -> list
                 TodoFilter.ACTIVE -> list.filter { !it.isDone }
                 TodoFilter.DONE   -> list.filter { it.isDone }
             }
+
+            if (query.isBlank()) {
+                filtered
+            } else {
+                filtered.filter { it.title.contains(query, ignoreCase = true) }
+            }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Hitung jumlah todo yang selesai
+    val doneCount: StateFlow<Int> = _todos
+        .combine(MutableStateFlow(Unit)) { list, _ ->
+            list.count { it.isDone }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
+    // Hitung jumlah todo yang aktif
+    val activeCount: StateFlow<Int> = _todos
+        .combine(MutableStateFlow(Unit)) { list, _ ->
+            list.count { !it.isDone }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     init {
         viewModelScope.launch { _todos.value = repo.loadAll() }
@@ -46,6 +67,10 @@ class TodoViewModelWithRepo(
 
     fun setFilter(f: TodoFilter) {
         _filter.value = f
+    }
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     fun addTask(title: String) {
