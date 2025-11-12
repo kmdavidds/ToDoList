@@ -1,4 +1,4 @@
-package com.example.todoapp
+package com.example.todolist
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
