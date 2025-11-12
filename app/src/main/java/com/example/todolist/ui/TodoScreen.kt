@@ -1,4 +1,4 @@
-package com.example.todolist.ui.theme
+package com.example.todolist.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,10 +9,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.todolist.viewmodel.TodoViewModel
+import com.example.todolist.viewmodel.TodoViewModelWithRepo
 
 @Composable
-fun TodoScreen(vm: TodoViewModel = viewModel()) {
+fun TodoScreen(vm: TodoViewModelWithRepo = viewModel()) {
     val todos by vm.todos.collectAsState()
     var text by rememberSaveable { mutableStateOf("") }
     Column(Modifier.padding(16.dp)) {
